@@ -26,7 +26,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //设置控件对应相应函数
         buttonUpLoad.setOnClickListener(this);
         buttonDownLoad.setOnClickListener(this);
-        sftp = new SFTPUtils("1.34.74.162", "osmc","2jdilgxl");
+        sftp = new SFTPUtils("host address", "user","password");
     }
     public void onClick(final View v) {
         // TODO Auto-generated method stub
