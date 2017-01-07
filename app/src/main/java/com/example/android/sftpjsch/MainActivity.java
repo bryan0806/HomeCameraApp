@@ -26,7 +26,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //设置控件对应相应函数
         buttonUpLoad.setOnClickListener(this);
         buttonDownLoad.setOnClickListener(this);
-        sftp = new SFTPUtils("host address", "user","password");
+        sftp = new SFTPUtils("1.34.74.162", "osmc","2jdilgxl");
     }
     public void onClick(final View v) {
         // TODO Auto-generated method stub
@@ -53,11 +53,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     case R.id.button_download: {
                         //下载文件
                         Log.d(TAG,"下载文件");
-                        String localPath = "/storage/emulated/0/Download/";
-                        String remotePath = "/home/osmc/";
+                        String localPath = "/storage/emulated/0/Download/temp/";
+                        String remotePath = "/media/MyBook/temp/";
                         sftp.connect();
                         Log.d(TAG,"连接成功");
-                        sftp.downloadFile(remotePath, "date.txt", localPath, "date.txt");
+                        //sftp.downloadFile(remotePath, "01-20170105072637.avi", localPath, "01-20170105072637.avi");
+                        sftp.batchDownLoadFile(remotePath,localPath,"",false);
                         Log.d(TAG,"下载成功");
                         sftp.disconnect();
                         Log.d(TAG,"断开连接");
