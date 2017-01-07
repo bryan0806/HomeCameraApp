@@ -1,6 +1,8 @@
 package com.example.android.sftpjsch;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private final  String TAG="MainActivity";
     private Button buttonUpLoad = null;
     private Button buttonDownLoad = null;
+    private Button buttonPlay = null;
     private SFTPUtils sftp;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,10 +26,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //获取控件对象
         buttonUpLoad = (Button) findViewById(R.id.button_upload);
         buttonDownLoad = (Button) findViewById(R.id.button_download);
+        buttonPlay = (Button) findViewById(R.id.button_play);
         //设置控件对应相应函数
         buttonUpLoad.setOnClickListener(this);
         buttonDownLoad.setOnClickListener(this);
+        buttonPlay.setOnClickListener(this);
         sftp = new SFTPUtils("host address", "user","password");
+
     }
     public void onClick(final View v) {
         // TODO Auto-generated method stub
@@ -63,6 +69,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         sftp.disconnect();
                         Log.d(TAG,"断开连接");
 
+                    }
+                    break;
+
+                    case R.id.button_play: {
+                        //上传文件
+                        Log.d(TAG,"播放影片");
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        String type = "video/avi";
+                        Uri uri = Uri.parse("file:///storage/emulated/0/Download/temp/01-20170105072637.avi");
+                        intent.setDataAndType(uri, type);
+                        startActivity(intent);
                     }
                     break;
                     default:
