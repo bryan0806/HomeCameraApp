@@ -231,7 +231,7 @@ public class SFTPUtils {
 
 
             //sftp.get(remoteFileName, new FileOutputStream(file));
-            byte[] buffer = new byte[102400];
+            byte[] buffer = new byte[1024000];
             BufferedInputStream bis = new BufferedInputStream(sftp.get(remotePath+remoteFileName));
             File newFile = new File(localPath+localFileName);
             mkdirs(localPath + localFileName);

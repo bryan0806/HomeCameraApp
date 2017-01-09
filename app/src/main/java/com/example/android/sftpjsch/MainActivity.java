@@ -9,12 +9,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.File;
+
 public class MainActivity extends Activity implements View.OnClickListener {
     private final  String TAG="MainActivity";
     private Button buttonUpLoad = null;
     private Button buttonDownLoad = null;
     private Button buttonPlay = null;
     private SFTPUtils sftp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +71,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         Log.d(TAG,"下载成功");
                         sftp.disconnect();
                         Log.d(TAG,"断开连接");
-
+                        playFile(localPath);
                     }
                     break;
 
@@ -88,5 +91,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         }.start();
     };
+
+    public void playFile(String filePathName){
+
+        File folder = new File(filePathName);
+        File[] listOfFiles = folder.listFiles();
+
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                String type = "video/avi";
+                Uri uri = Uri.parse("file://"+filePathName+listOfFiles[i].getName());
+                intent.setDataAndType(uri, type);
+                startActivity(intent);
+            } else if (listOfFiles[i].isDirectory()) {
+                System.out.println("Directory " + listOfFiles[i].getName());
+            }
+        }
+
+
+    }
 }
+
+
 
