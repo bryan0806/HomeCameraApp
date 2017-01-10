@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">sftpJsch</string>
+    <string name="set_date">你設定的日期為</string>
 </resources>

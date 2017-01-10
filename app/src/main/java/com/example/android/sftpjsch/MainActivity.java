@@ -1,6 +1,8 @@
 package com.example.android.sftpjsch;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +10,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jcraft.jsch.ChannelExec;
@@ -16,14 +20,23 @@ import com.jcraft.jsch.Session;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.Properties;
+import java.util.Calendar;
+
+import static android.R.attr.format;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     private final  String TAG="MainActivity";
     private Button buttonUpLoad = null;
     private Button buttonDownLoad = null;
+    private Button buttonDownloadDate = null;
     private Button buttonPlay = null;
     private SFTPUtils sftp;
+    private int mYear, mMonth, mDay;
+    private TextView dateText = null;
+    DecimalFormat formatter = new DecimalFormat("00");
+    private String theYear, theMonth, theDay = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,55 +49,67 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //获取控件对象
         buttonUpLoad = (Button) findViewById(R.id.button_upload);
         buttonDownLoad = (Button) findViewById(R.id.button_download);
+        buttonDownloadDate = (Button) findViewById(R.id.button_download_date);
         buttonPlay = (Button) findViewById(R.id.button_play);
+        dateText = (TextView)findViewById(R.id.dateText);
         //设置控件对应相应函数
         buttonUpLoad.setOnClickListener(this);
         buttonDownLoad.setOnClickListener(this);
+        buttonDownloadDate.setOnClickListener(this);
         buttonPlay.setOnClickListener(this);
         sftp = new SFTPUtils("host address", "user","password");
 
     }
     public void onClick(final View v) {
         // TODO Auto-generated method stub
-        new Thread() {
-            @Override
-            public void run() {
-                //这里写入子线程需要做的工作
+
 
                 switch (v.getId()) {
                     case R.id.button_upload: {
-                        //開始連結到server然後下載到temp資料夾
-                        try {
-                            String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\" -d \"1 day ago\"`*.avi /media/MyBook/temp";
-                            connectAndDownload("user", "password", "host address", 22, dateCommand);
-                            Log.d(TAG,"連接server下達指令 - download yesterday's files");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
-                        }
-                        String localPath = "/storage/emulated/0/Download/temp/";
-                        String remotePath = "/media/MyBook/temp/";
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                //这里写入子线程需要做的工作
+                                //開始連結到server然後下載到temp資料夾
+                                try {
+                                    String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\" -d \"1 day ago\"`*.avi /media/MyBook/temp";
+                                    connectAndDownload("user", "password", "host address", 22, dateCommand);
+                                    Log.d(TAG, "連接server下達指令 - download yesterday's files");
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
+                                }
+                                String localPath = "/storage/emulated/0/Download/temp/";
+                                String remotePath = "/media/MyBook/temp/";
 
-                        downloadToDevice(remotePath,localPath);
-                        playFile(localPath);
+                                downloadToDevice(remotePath, localPath);
+                                playFile(localPath);
+                            }
+                        }.start();
                     }
                     break;
 
                     case R.id.button_download: {
-                        //開始連結到server然後下載到temp資料夾
-                        try {
-                            String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\"`*.avi /media/MyBook/temp";
-                            connectAndDownload("user", "password", "host address", 22, dateCommand);
-                            Log.d(TAG,"連接server下達指令 - download today's files");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                             Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
-                        }
-                        String localPath = "/storage/emulated/0/Download/temp/";
-                        String remotePath = "/media/MyBook/temp/";
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                //这里写入子线程需要做的工作
+                                //開始連結到server然後下載到temp資料夾
+                                try {
+                                    String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\"`*.avi /media/MyBook/temp";
+                                    connectAndDownload("user", "password", "host address", 22, dateCommand);
+                                    Log.d(TAG, "連接server下達指令 - download today's files");
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
+                                }
+                                String localPath = "/storage/emulated/0/Download/temp/";
+                                String remotePath = "/media/MyBook/temp/";
 
-                        downloadToDevice(remotePath,localPath);
-                        playFile(localPath);
+                                downloadToDevice(remotePath, localPath);
+                                playFile(localPath);
+                            }
+                        }.start();
                     }
                     break;
 
@@ -98,12 +123,36 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         startActivity(intent);
                     }
                     break;
+
+                    case R.id.button_download_date: {
+                        Log.d(TAG,"Enter date case");
+                        final Calendar c = Calendar.getInstance();
+                        mYear = c.get(Calendar.YEAR);
+                        mMonth = c.get(Calendar.MONTH);
+                        mDay = c.get(Calendar.DAY_OF_MONTH);
+                        new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int year, int month, int day) {
+                                //String format = getString(R.string.set_date) + setDateFormat(year,month,day);
+                                theYear = String.valueOf(year);
+                                theMonth = formatter.format(month+1);
+                                theDay = formatter.format(day);
+                                Log.d(TAG,"Year:"+String.valueOf(year)+"Month:"+theMonth+"Day:"+theDay);
+                                //dateText.setText(format);
+                                downloadTheDate(theYear+theMonth+theDay);
+
+                            }
+
+                        }, mYear,mMonth, mDay).show();
+
+                    }
+                    break;
+
                     default:
+                        Log.d(TAG,"Enter DEFAULT case");
                         break;
                 }
             }
-        }.start();
-    };
 
     public void playFile(String filePathName){
 
@@ -172,6 +221,35 @@ public class MainActivity extends Activity implements View.OnClickListener {
         Log.d(TAG,"下载成功");
         sftp.disconnect();
         Log.d(TAG,"断开连接");
+    }
+
+    private String setDateFormat(int year,int monthOfYear,int dayOfMonth){
+        return String.valueOf(year) + "-"
+                + String.valueOf(monthOfYear + 1) + "-"
+                + String.valueOf(dayOfMonth);
+    }
+
+    private void downloadTheDate(final String theexecdate){
+        new Thread() {
+            @Override
+            public void run() {
+                //这里写入子线程需要做的工作
+                //開始連結到server然後下載到temp資料夾
+                try {
+                    String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*"+theexecdate+"*.avi /media/MyBook/temp";
+                    connectAndDownload("osmc", "password", "host address", 22, dateCommand);
+                    Log.d(TAG, "連接server下達指令 - download today's files");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
+                }
+                String localPath = "/storage/emulated/0/Download/temp/";
+                String remotePath = "/media/MyBook/temp/";
+
+                downloadToDevice(remotePath, localPath);
+                playFile(localPath);
+            }
+        }.start();
     }
 
 

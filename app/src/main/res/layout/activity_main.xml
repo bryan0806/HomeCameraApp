@@ -28,10 +28,23 @@
         />
 
     <Button
+        android:id="@+id/button_download_date"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="指定日期影片"
+        />
+
+    <Button
         android:id="@+id/button_play"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="play"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dateText"
         />
 
 </LinearLayout>
