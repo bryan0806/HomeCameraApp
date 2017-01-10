@@ -8,8 +8,15 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.Properties;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     private final  String TAG="MainActivity";
@@ -60,17 +67,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     break;
 
                     case R.id.button_download: {
-                        //下载文件
-                        Log.d(TAG,"下载文件");
+                        //開始連結到server然後下載到temp資料夾
+                        try {
+                            connectAndDownloadToday("user", "password", "host address", 22);
+                            Log.d(TAG,"連接server下達指令");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                             Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
+                        }
                         String localPath = "/storage/emulated/0/Download/temp/";
                         String remotePath = "/media/MyBook/temp/";
-                        sftp.connect();
-                        Log.d(TAG,"连接成功");
-                        //sftp.downloadFile(remotePath, "01-20170105072637.avi", localPath, "01-20170105072637.avi");
-                        sftp.batchDownLoadFile(remotePath,localPath,"",false);
-                        Log.d(TAG,"下载成功");
-                        sftp.disconnect();
-                        Log.d(TAG,"断开连接");
+
+                        downloadToDevice(remotePath,localPath);
                         playFile(localPath);
                     }
                     break;
@@ -111,6 +119,56 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 
     }
+
+    public Boolean connectAndDownloadToday(
+            String username,
+            String password,
+            String hostname,
+            int port
+    ) throws Exception {
+
+        JSch jsch=new JSch();
+        Session session = jsch.getSession(username,hostname,port);
+        session.setPassword(password);
+
+        Properties prop = new Properties();
+        prop.put("StrictHostKeyChecking","no");
+
+
+        session.setConfig(prop);
+
+        session.connect();
+
+        ChannelExec channelssh=(ChannelExec)session.openChannel("exec");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        channelssh.setOutputStream(baos);
+
+        channelssh.setCommand("sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\"`*.avi /media/MyBook/temp");
+        channelssh.connect();
+        while (channelssh.getExitStatus() == -1){
+            try{Thread.sleep(1000);}catch(Exception e){System.out.println(e);}
+        }
+
+        channelssh.disconnect();
+        session.disconnect();
+        return true;
+    }
+
+    public void downloadToDevice(String remotePath,String localPath){
+        //下载文件
+        Log.d(TAG,"下载文件");
+
+        sftp.connect();
+        Log.d(TAG,"连接成功");
+        //sftp.downloadFile(remotePath, "01-20170105072637.avi", localPath, "01-20170105072637.avi");
+        sftp.batchDownLoadFile(remotePath,localPath,"",false);
+        Log.d(TAG,"下载成功");
+        sftp.disconnect();
+        Log.d(TAG,"断开连接");
+    }
+
+
 }
 
 
