@@ -11,20 +11,20 @@
         android:textStyle="bold"
         android:textSize="24dip"
         android:layout_gravity="center"
-        android:text="SFTP上传下载测试 "/>
+        android:text="我家的門口 "/>
 
     <Button
         android:id="@+id/button_upload"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="上传"
+        android:text="下載並撥放昨天的影片"
         />
 
     <Button
         android:id="@+id/button_download"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="下载"
+        android:text="下載並撥放今天的影片"
         />
 
     <Button

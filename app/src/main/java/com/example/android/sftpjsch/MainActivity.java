@@ -53,24 +53,29 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 switch (v.getId()) {
                     case R.id.button_upload: {
-                        //上传文件
-                        Log.d(TAG,"上传文件");
-                        String localPath = "/storage/609B-EE68/Download/temp/";
-                        String remotePath = "/";
-                        sftp.connect();
-                        Log.d(TAG,"连接成功");
-                        sftp.uploadFile(remotePath,"APPInfo.xml", localPath, "APPInfo.xml");
-                        Log.d(TAG,"上传成功");
-                        sftp.disconnect();
-                        Log.d(TAG,"断开连接");
+                        //開始連結到server然後下載到temp資料夾
+                        try {
+                            String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\" -d \"1 day ago\"`*.avi /media/MyBook/temp";
+                            connectAndDownload("user", "password", "host address", 22, dateCommand);
+                            Log.d(TAG,"連接server下達指令 - download yesterday's files");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
+                        }
+                        String localPath = "/storage/emulated/0/Download/temp/";
+                        String remotePath = "/media/MyBook/temp/";
+
+                        downloadToDevice(remotePath,localPath);
+                        playFile(localPath);
                     }
                     break;
 
                     case R.id.button_download: {
                         //開始連結到server然後下載到temp資料夾
                         try {
-                            connectAndDownloadToday("user", "password", "host address", 22);
-                            Log.d(TAG,"連接server下達指令");
+                            String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\"`*.avi /media/MyBook/temp";
+                            connectAndDownload("user", "password", "host address", 22, dateCommand);
+                            Log.d(TAG,"連接server下達指令 - download today's files");
                         } catch (Exception e) {
                             e.printStackTrace();
                              Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
@@ -120,11 +125,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     }
 
-    public Boolean connectAndDownloadToday(
+    public Boolean connectAndDownload(
             String username,
             String password,
             String hostname,
-            int port
+            int port,
+            String datecommand
     ) throws Exception {
 
         JSch jsch=new JSch();
@@ -144,7 +150,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         channelssh.setOutputStream(baos);
 
-        channelssh.setCommand("sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\"`*.avi /media/MyBook/temp");
+        channelssh.setCommand(datecommand);
         channelssh.connect();
         while (channelssh.getExitStatus() == -1){
             try{Thread.sleep(1000);}catch(Exception e){System.out.println(e);}
