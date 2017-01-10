@@ -41,10 +41,18 @@
         android:text="play"
         />
 
+    <Button
+        android:text="刪除檔案離開程式"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_exit"
+        />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/dateText"
         />
+
 
 </LinearLayout>

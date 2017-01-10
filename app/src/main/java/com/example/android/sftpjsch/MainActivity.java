@@ -32,6 +32,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Button buttonDownLoad = null;
     private Button buttonDownloadDate = null;
     private Button buttonPlay = null;
+    private Button buttonExit = null;
     private SFTPUtils sftp;
     private int mYear, mMonth, mDay;
     private TextView dateText = null;
@@ -51,12 +52,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         buttonDownLoad = (Button) findViewById(R.id.button_download);
         buttonDownloadDate = (Button) findViewById(R.id.button_download_date);
         buttonPlay = (Button) findViewById(R.id.button_play);
+        buttonExit = (Button) findViewById(R.id.button_exit);
         dateText = (TextView)findViewById(R.id.dateText);
         //设置控件对应相应函数
         buttonUpLoad.setOnClickListener(this);
         buttonDownLoad.setOnClickListener(this);
         buttonDownloadDate.setOnClickListener(this);
         buttonPlay.setOnClickListener(this);
+        buttonExit.setOnClickListener(this);
         sftp = new SFTPUtils("host address", "user","password");
 
     }
@@ -145,6 +148,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                         }, mYear,mMonth, mDay).show();
 
+                    }
+                    break;
+
+                    case R.id.button_exit:{
+                        File deletefiles = new File("/storage/emulated/0/Download/temp/");
+                        deleteRecursive(deletefiles);
+                        System.exit(0);
                     }
                     break;
 
@@ -250,6 +260,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 playFile(localPath);
             }
         }.start();
+    }
+
+    private void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory())
+            for (File child : fileOrDirectory.listFiles())
+                deleteRecursive(child);
+
+        fileOrDirectory.delete();
     }
 
 
