@@ -1,7 +1,10 @@
 package com.example.android.sftpjsch;
 
 import android.annotation.SuppressLint;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
+
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -38,11 +41,16 @@ public class SFTPUtils {
     private int port = 22;
     private ChannelSftp sftp = null;
     private Session sshSession = null;
+    private int maxFiles;
+    private int downloadStatus = 0;
+    private Handler progressBarHandler = new Handler();
 
-    public SFTPUtils (String host, String username, String password) {
+
+    public SFTPUtils (String host, String username, String password, Handler handler) {
         this.host = host;
         this.username = username;
         this.password = password;
+        progressBarHandler = handler;
     }
 
     /**
@@ -112,8 +120,7 @@ public class SFTPUtils {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (SftpException e) {
-            e.printStackTrace();
-        } finally {
+            e.printStackTrace();       } finally {
             if (in != null) {
                 try {
                     in.close();
@@ -181,6 +188,8 @@ public class SFTPUtils {
             if (v.size() > 0) {
 
                 Iterator it = v.iterator();
+                System.out.println("There are "+Integer.toString(v.size())+" files to download");
+                maxFiles = v.size();
                 while (it.hasNext()) {
                     LsEntry entry = (LsEntry) it.next();
                     String filename = entry.getFilename();
@@ -240,12 +249,14 @@ public class SFTPUtils {
             int readCount;
             //System.out.println("Getting: " + theLine);
             while( (readCount = bis.read(buffer)) > 0) {
-                System.out.println("Writing: " );
+                //System.out.println("Writing: " );
+                checkStatus();
                 bos.write(buffer, 0, readCount);
             }
             bis.close();
             bos.close();
-
+            System.out.println("Finished Writing "+remoteFileName );
+            downloadStatus++;
             return true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -356,5 +367,57 @@ public class SFTPUtils {
     public Vector listFiles(String directory) throws SftpException {
         return sftp.ls(directory);
     }
+
+    public int returnMax(){
+        return maxFiles;
+    }
+
+    public int returnStatus(){
+        return downloadStatus;
+    }
+
+
+
+    private void checkStatus(){
+        if (downloadStatus < maxFiles) {
+
+            // process some tasks
+            //progressBarStatus = returnStatus();
+            System.out.println("returnMax="+returnMax());
+            System.out.println("return Status="+returnStatus());
+            //System.out.println("return status = "+returnStatus());
+            // your computer is too fast, sleep 1 second
+            /*try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }*/
+
+            // Update the progress bar
+            Message msg = new Message();
+            msg.what = downloadStatus;
+            progressBarHandler.sendMessage(msg);
+
+        }
+
+        // ok, file is downloaded,
+        if (downloadStatus >= maxFiles) {
+
+            // sleep 2 seconds, so that you can see the 100%
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            // close the progress bar dialog
+            //progressBar.dismiss();
+            Message msg = new Message();
+            msg.what = downloadStatus;
+            progressBarHandler.sendMessage(msg);
+        }
+    }
+
+
 
 }

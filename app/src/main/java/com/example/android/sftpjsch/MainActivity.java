@@ -2,9 +2,11 @@ package com.example.android.sftpjsch;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +15,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.os.Handler;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
@@ -25,6 +28,7 @@ import java.util.Properties;
 import java.util.Calendar;
 
 import static android.R.attr.format;
+import static android.R.attr.scaleGravity;
 
 public class MainActivity extends Activity implements View.OnClickListener {
     private final  String TAG="MainActivity";
@@ -38,6 +42,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView dateText = null;
     DecimalFormat formatter = new DecimalFormat("00");
     private String theYear, theMonth, theDay = "";
+    Handler progressBarHandler = new Handler() {
+        @Override
+        public void handleMessage (Message msg) {
+            if (msg.what == 0) {
+                progressBar.setMax(sftp.returnMax());
+                progressBar.setProgress(msg.what);
+            } else if (msg.what < sftp.returnMax()) {
+                progressBar.setProgress(msg.what);
+            } else if (msg.what == sftp.returnMax()) {
+                progressBar.dismiss();
+            }
+        }
+    };
+    ProgressDialog progressBar;
+    private int progressBarStatus = 0;
+    //private Handler progressBarHandler = new Handler();
+    private long fileSize = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +82,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         buttonDownloadDate.setOnClickListener(this);
         buttonPlay.setOnClickListener(this);
         buttonExit.setOnClickListener(this);
-        sftp = new SFTPUtils("host address", "user","password");
+        sftp = new SFTPUtils("host address", "user","password",progressBarHandler);
 
     }
     public void onClick(final View v) {
@@ -93,12 +115,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     break;
 
                     case R.id.button_download: {
+                        statusBar(v);
                         new Thread() {
                             @Override
                             public void run() {
                                 //这里写入子线程需要做的工作
                                 //開始連結到server然後下載到temp資料夾
                                 try {
+
                                     String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\"`*.avi /media/MyBook/temp";
                                     connectAndDownload("user", "password", "host address", 22, dateCommand);
                                     Log.d(TAG, "連接server下達指令 - download today's files");
@@ -211,6 +235,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         channelssh.setCommand(datecommand);
         channelssh.connect();
+        //增加這個while loop讓程式可以順利等到server下載完成之後才執行下載到手機的動作
         while (channelssh.getExitStatus() == -1){
             try{Thread.sleep(1000);}catch(Exception e){System.out.println(e);}
         }
@@ -269,6 +294,25 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         fileOrDirectory.delete();
     }
+
+    private void statusBar(View view){
+
+        // prepare for a progress bar dialog
+        progressBar = new ProgressDialog(view.getContext());
+        progressBar.setCancelable(true);
+        progressBar.setMessage("File downloading ...");
+        progressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressBar.setProgress(0);
+        progressBar.setMax(sftp.returnMax());
+        progressBar.show();
+
+        //reset progress bar status
+        progressBarStatus = 0;
+
+        //reset filesize
+        fileSize = 0;
+    }
+
 
 
 }
