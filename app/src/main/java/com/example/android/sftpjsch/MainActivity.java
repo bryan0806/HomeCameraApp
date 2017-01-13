@@ -45,12 +45,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     Handler progressBarHandler = new Handler() {
         @Override
         public void handleMessage (Message msg) {
-            if (msg.what == 0) {
-                progressBar.setMax(sftp.returnMax());
+            if (msg.what == 1) {
+                progressBar.setMax(sftp.returnMax()-2);
                 progressBar.setProgress(msg.what);
             } else if (msg.what < sftp.returnMax()) {
                 progressBar.setProgress(msg.what);
-            } else if (msg.what == sftp.returnMax()) {
+            } else if (msg.what == sftp.returnMax()-2) {
                 progressBar.dismiss();
             }
         }
@@ -83,7 +83,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         buttonPlay.setOnClickListener(this);
         buttonExit.setOnClickListener(this);
         sftp = new SFTPUtils("host address", "user","password",progressBarHandler);
-
     }
     public void onClick(final View v) {
         // TODO Auto-generated method stub
@@ -91,6 +90,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 switch (v.getId()) {
                     case R.id.button_upload: {
+                        statusBar(v);
                         new Thread() {
                             @Override
                             public void run() {
@@ -166,7 +166,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 theDay = formatter.format(day);
                                 Log.d(TAG,"Year:"+String.valueOf(year)+"Month:"+theMonth+"Day:"+theDay);
                                 //dateText.setText(format);
-                                downloadTheDate(theYear+theMonth+theDay);
+                                downloadTheDate(theYear+theMonth+theDay,v);
 
                             }
 
@@ -264,7 +264,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 + String.valueOf(dayOfMonth);
     }
 
-    private void downloadTheDate(final String theexecdate){
+    private void downloadTheDate(final String theexecdate,View view){
+        statusBar(view);
         new Thread() {
             @Override
             public void run() {
@@ -272,7 +273,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 //開始連結到server然後下載到temp資料夾
                 try {
                     String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*"+theexecdate+"*.avi /media/MyBook/temp";
-                    connectAndDownload("osmc", "password", "host address", 22, dateCommand);
+                    connectAndDownload("user", "password", "host address", 22, dateCommand);
                     Log.d(TAG, "連接server下達指令 - download today's files");
                 } catch (Exception e) {
                     e.printStackTrace();

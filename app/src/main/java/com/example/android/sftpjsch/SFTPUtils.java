@@ -42,7 +42,7 @@ public class SFTPUtils {
     private ChannelSftp sftp = null;
     private Session sshSession = null;
     private int maxFiles;
-    private int downloadStatus = 0;
+    private int downloadStatus = 1;
     private Handler progressBarHandler = new Handler();
 
 
@@ -193,6 +193,7 @@ public class SFTPUtils {
                 while (it.hasNext()) {
                     LsEntry entry = (LsEntry) it.next();
                     String filename = entry.getFilename();
+                    System.out.println("filename:"+filename);
                     SftpATTRS attrs = entry.getAttrs();
                     if (!attrs.isDir()) {
                         if (fileFormat != null && !"".equals(fileFormat.trim())) {
@@ -405,7 +406,7 @@ public class SFTPUtils {
 
             // sleep 2 seconds, so that you can see the 100%
             try {
-                Thread.sleep(2000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
