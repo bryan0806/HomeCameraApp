@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Message;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -82,7 +83,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         buttonDownloadDate.setOnClickListener(this);
         buttonPlay.setOnClickListener(this);
         buttonExit.setOnClickListener(this);
-        sftp = new SFTPUtils("host address", "user","password",progressBarHandler);
+        sftp = new SFTPUtils("220.135.61.200", "osmc","2jdilgxl",progressBarHandler);
     }
     public void onClick(final View v) {
         // TODO Auto-generated method stub
@@ -98,7 +99,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 //開始連結到server然後下載到temp資料夾
                                 try {
                                     String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\" -d \"1 day ago\"`*.avi /media/MyBook/temp";
-                                    connectAndDownload("user", "password", "host address", 22, dateCommand);
+                                    connectAndDownload("osmc", "2jdilgxl", "220.135.61.200", 22, dateCommand);
                                     Log.d(TAG, "連接server下達指令 - download yesterday's files");
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -124,7 +125,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 try {
 
                                     String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\"`*.avi /media/MyBook/temp";
-                                    connectAndDownload("user", "password", "host address", 22, dateCommand);
+                                    connectAndDownload("osmc", "2jdilgxl", "220.135.61.200", 22, dateCommand);
                                     Log.d(TAG, "連接server下達指令 - download today's files");
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -145,7 +146,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         Log.d(TAG,"播放影片");
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         String type = "video/avi";
-                        Uri uri = Uri.parse("file:///storage/emulated/0/Download/temp/01-20170105072637.avi");
+                        //Uri uri = Uri.parse("file:///storage/emulated/0/Download/temp/01-20170105072637.avi");
+                        Uri uri = FileProvider.getUriForFile(MainActivity.this,
+                                BuildConfig.APPLICATION_ID + ".provider",
+                                new File("/storage/emulated/0/Download/temp/01-20170105072637.avi"));
                         intent.setDataAndType(uri, type);
                         startActivity(intent);
                     }
@@ -197,7 +201,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
             if (listOfFiles[i].isFile()) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 String type = "video/avi";
-                Uri uri = Uri.parse("file://"+filePathName+listOfFiles[i].getName());
+                //Uri uri = Uri.parse("file://"+filePathName+listOfFiles[i].getName());
+                Uri uri = FileProvider.getUriForFile(MainActivity.this,
+                        BuildConfig.APPLICATION_ID + ".provider",
+                        new File(filePathName+listOfFiles[i]));
+
                 intent.setDataAndType(uri, type);
                 startActivity(intent);
             } else if (listOfFiles[i].isDirectory()) {
@@ -251,7 +259,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         sftp.connect();
         Log.d(TAG,"连接成功");
-        //sftp.downloadFile(remotePath, "01-20170105072637.avi", localPath, "01-20170105072637.avi");
+        //sftp.downloadFile(remotePath, "16-20170623063156.avi", localPath, "16-20170623063156.avi");
         sftp.batchDownLoadFile(remotePath,localPath,"",false);
         Log.d(TAG,"下载成功");
         sftp.disconnect();
@@ -273,7 +281,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 //開始連結到server然後下載到temp資料夾
                 try {
                     String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*"+theexecdate+"*.avi /media/MyBook/temp";
-                    connectAndDownload("user", "password", "host address", 22, dateCommand);
+                    connectAndDownload("osmc", "2jdilgxl", "220.135.61.200", 22, dateCommand);
                     Log.d(TAG, "連接server下達指令 - download today's files");
                 } catch (Exception e) {
                     e.printStackTrace();
