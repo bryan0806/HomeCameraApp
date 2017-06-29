@@ -1,9 +1,11 @@
 package com.example.android.sftpjsch;
 
+
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Message;
@@ -43,6 +45,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView dateText = null;
     DecimalFormat formatter = new DecimalFormat("00");
     private String theYear, theMonth, theDay = "";
+    // Save server address / user name / password to sharepreferences
+    SharedPreferences sharedpreferences;
+    TextView server;
+    TextView user;
+    TextView password;
+    public static final String mypreference = "mypref";
+    public static final String Server = "serverKey";
+    public static final String User = "userKey";
+    public static final String Password = "passwordKey";
+
     Handler progressBarHandler = new Handler() {
         @Override
         public void handleMessage (Message msg) {
@@ -66,6 +78,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        server = (TextView) findViewById(R.id.server);
+        user = (TextView) findViewById(R.id.user);
+        password = (TextView) findViewById(R.id.password);
+        sharedpreferences = getSharedPreferences(mypreference,
+                Context.MODE_PRIVATE);
+        if (sharedpreferences.contains(Server)) {
+            server.setText(sharedpreferences.getString(Server, ""));
+        }
+        if (sharedpreferences.contains(User)) {
+            user.setText(sharedpreferences.getString(User, ""));
+        }
+        if (sharedpreferences.contains(Password)) {
+            password.setText(sharedpreferences.getString(Password, ""));
+        }
+
         init();
     }
 
@@ -83,15 +110,91 @@ public class MainActivity extends Activity implements View.OnClickListener {
         buttonDownloadDate.setOnClickListener(this);
         buttonPlay.setOnClickListener(this);
         buttonExit.setOnClickListener(this);
-        sftp = new SFTPUtils("220.135.61.200", "osmc","2jdilgxl",progressBarHandler);
+
+        String server_string = "";
+        String user_string = "";
+        String password_string = "";
+        sharedpreferences = getSharedPreferences(mypreference,
+                Context.MODE_PRIVATE);
+
+        if (sharedpreferences.contains(Server)) {
+            server_string = sharedpreferences.getString(Server, "");
+        }
+        if (sharedpreferences.contains(User)) {
+            user_string = sharedpreferences.getString(User, "");
+        }
+        if (sharedpreferences.contains(Password)) {
+            password_string = sharedpreferences.getString(Password, "");
+        }
+
+
+        sftp = new SFTPUtils(server_string, user_string,password_string,progressBarHandler);
     }
+
+    public void Save(View view) {
+        String server_add = server.getText().toString();
+        String user_name = user.getText().toString();
+        String pass = password.getText().toString();
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(Server, server_add);
+        editor.putString(User, user_name);
+        editor.putString(Password, pass);
+        editor.commit();
+    }
+
+    public void clear(View view) {
+        server = (TextView) findViewById(R.id.server);
+        user = (TextView) findViewById(R.id.user);
+        password = (TextView) findViewById(R.id.password);
+        server.setText("");
+        user.setText("");
+        password.setText("");
+    }
+
+    public void Get(View view) {
+        server = (TextView) findViewById(R.id.server);
+        user = (TextView) findViewById(R.id.user);
+        password = (TextView) findViewById(R.id.password);
+        sharedpreferences = getSharedPreferences(mypreference,
+                Context.MODE_PRIVATE);
+
+        if (sharedpreferences.contains(Server)) {
+            server.setText(sharedpreferences.getString(Server, ""));
+        }
+        if (sharedpreferences.contains(User)) {
+            user.setText(sharedpreferences.getString(User, ""));
+        }
+        if (sharedpreferences.contains(Password)) {
+            password.setText(sharedpreferences.getString(Password, ""));
+        }
+
+    }
+
+
     public void onClick(final View v) {
         // TODO Auto-generated method stub
+        String server_string = "";
+        String user_string = "";
+        String password_string = "";
+        sharedpreferences = getSharedPreferences(mypreference,
+                Context.MODE_PRIVATE);
 
+        if (sharedpreferences.contains(Server)) {
+            server_string = sharedpreferences.getString(Server, "");
+        }
+        if (sharedpreferences.contains(User)) {
+            user_string = sharedpreferences.getString(User, "");
+        }
+        if (sharedpreferences.contains(Password)) {
+            password_string = sharedpreferences.getString(Password, "");
+        }
 
                 switch (v.getId()) {
                     case R.id.button_upload: {
                         statusBar(v);
+                        final String finalServer_string1 = server_string;
+                        final String finalPassword_string = password_string;
+                        final String finalUser_string1 = user_string;
                         new Thread() {
                             @Override
                             public void run() {
@@ -99,17 +202,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 //開始連結到server然後下載到temp資料夾
                                 try {
                                     String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\" -d \"1 day ago\"`*.avi /media/MyBook/temp";
-                                    connectAndDownload("osmc", "2jdilgxl", "220.135.61.200", 22, dateCommand);
+                                    connectAndDownload(finalUser_string1, finalPassword_string, finalServer_string1, 22, dateCommand);
                                     Log.d(TAG, "連接server下達指令 - download yesterday's files");
                                 } catch (Exception e) {
+                                    Log.d(TAG, "enter exception and user.tostring is "+user);
                                     e.printStackTrace();
-                                    Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
+                                    //Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
                                 }
                                 String localPath = "/storage/emulated/0/Download/temp/";
                                 String remotePath = "/media/MyBook/temp/";
 
                                 downloadToDevice(remotePath, localPath);
-                                playFile(localPath);
+                                //playFile(localPath);
                             }
                         }.start();
                     }
@@ -117,25 +221,30 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                     case R.id.button_download: {
                         statusBar(v);
+                        final String finalUser_string = user_string;
+                        final String finalServer_string = server_string;
+                        final String finalPasswrod_string = password_string;
                         new Thread() {
                             @Override
                             public void run() {
                                 //这里写入子线程需要做的工作
                                 //開始連結到server然後下載到temp資料夾
                                 try {
-
+                                    Log.d(TAG,"user: "+ finalUser_string);
                                     String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\"`*.avi /media/MyBook/temp";
-                                    connectAndDownload("osmc", "2jdilgxl", "220.135.61.200", 22, dateCommand);
+                                    connectAndDownload(finalUser_string, finalPasswrod_string, finalServer_string, 22, dateCommand);
                                     Log.d(TAG, "連接server下達指令 - download today's files");
                                 } catch (Exception e) {
+                                    Log.d(TAG, "enter exception and user.tostring is "+user);
                                     e.printStackTrace();
-                                    Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
+                                    //Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
                                 }
+
                                 String localPath = "/storage/emulated/0/Download/temp/";
                                 String remotePath = "/media/MyBook/temp/";
 
                                 downloadToDevice(remotePath, localPath);
-                                playFile(localPath);
+                                //playFile(localPath);
                             }
                         }.start();
                     }
@@ -274,6 +383,25 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void downloadTheDate(final String theexecdate,View view){
         statusBar(view);
+        String server_string = "";
+        String user_string = "";
+        String password_string = "";
+        sharedpreferences = getSharedPreferences(mypreference,
+                Context.MODE_PRIVATE);
+
+        if (sharedpreferences.contains(Server)) {
+            server_string = sharedpreferences.getString(Server, "");
+        }
+        if (sharedpreferences.contains(User)) {
+            user_string = sharedpreferences.getString(User, "");
+        }
+        if (sharedpreferences.contains(Password)) {
+            password_string = sharedpreferences.getString(Password, "");
+        }
+
+        final String finalUser_string = user_string;
+        final String finalPassword_string = password_string;
+        final String finalServer_string = server_string;
         new Thread() {
             @Override
             public void run() {
@@ -281,7 +409,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 //開始連結到server然後下載到temp資料夾
                 try {
                     String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*"+theexecdate+"*.avi /media/MyBook/temp";
-                    connectAndDownload("osmc", "2jdilgxl", "220.135.61.200", 22, dateCommand);
+                    connectAndDownload(finalUser_string, finalPassword_string, finalServer_string, 22, dateCommand);
                     Log.d(TAG, "連接server下達指令 - download today's files");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -291,7 +419,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 String remotePath = "/media/MyBook/temp/";
 
                 downloadToDevice(remotePath, localPath);
-                playFile(localPath);
+                //playFile(localPath);
             }
         }.start();
     }
