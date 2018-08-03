@@ -201,7 +201,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 //这里写入子线程需要做的工作
                                 //開始連結到server然後下載到temp資料夾
                                 try {
-                                    String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\" -d \"1 day ago\"`*.avi /media/MyBook/temp";
+                                    String dateCommand = "sudo rm /media/69a94f44-6f67-49f6-96b2-fe9112c75893/temp/*;cp /media/69a94f44-6f67-49f6-96b2-fe9112c75893/camera/*`date +\"%Y%m%d\" -d \"1 day ago\"`*.avi /media/69a94f44-6f67-49f6-96b2-fe9112c75893/temp";
                                     connectAndDownload(finalUser_string1, finalPassword_string, finalServer_string1, 22, dateCommand);
                                     Log.d(TAG, "連接server下達指令 - download yesterday's files");
                                 } catch (Exception e) {
@@ -210,8 +210,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                     //Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
                                 }
                                 String localPath = "/storage/emulated/0/Download/temp/";
-                                String remotePath = "/media/MyBook/temp/";
-
+                                Log.d(TAG, "internal storage ok !!");
+                                String remotePath = "/media/69a94f44-6f67-49f6-96b2-fe9112c75893/temp/";
                                 downloadToDevice(remotePath, localPath);
                                 //playFile(localPath);
                             }
@@ -231,7 +231,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 //開始連結到server然後下載到temp資料夾
                                 try {
                                     Log.d(TAG,"user: "+ finalUser_string);
-                                    String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*`date +\"%Y%m%d\"`*.avi /media/MyBook/temp";
+                                    String dateCommand = "sudo rm /media/69a94f44-6f67-49f6-96b2-fe9112c75893/temp/*;cp /media/69a94f44-6f67-49f6-96b2-fe9112c75893/camera/*`date +\"%Y%m%d\"`*.avi /media/69a94f44-6f67-49f6-96b2-fe9112c75893/temp";
                                     connectAndDownload(finalUser_string, finalPasswrod_string, finalServer_string, 22, dateCommand);
                                     Log.d(TAG, "連接server下達指令 - download today's files");
                                 } catch (Exception e) {
@@ -241,7 +241,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 }
 
                                 String localPath = "/storage/emulated/0/Download/temp/";
-                                String remotePath = "/media/MyBook/temp/";
+
+                                String remotePath = "/media/69a94f44-6f67-49f6-96b2-fe9112c75893/temp/";
 
                                 downloadToDevice(remotePath, localPath);
                                 //playFile(localPath);
@@ -408,7 +409,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 //这里写入子线程需要做的工作
                 //開始連結到server然後下載到temp資料夾
                 try {
-                    String dateCommand = "sudo rm /media/MyBook/temp/*;cp /media/MyBook/camera/*"+theexecdate+"*.avi /media/MyBook/temp";
+                    String dateCommand = "sudo rm /media/69a94f44-6f67-49f6-96b2-fe9112c75893/temp/*;cp /media/69a94f44-6f67-49f6-96b2-fe9112c75893/camera/*"+theexecdate+"*.avi /media/69a94f44-6f67-49f6-96b2-fe9112c75893/temp";
                     connectAndDownload(finalUser_string, finalPassword_string, finalServer_string, 22, dateCommand);
                     Log.d(TAG, "連接server下達指令 - download today's files");
                 } catch (Exception e) {
@@ -416,7 +417,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     Toast.makeText(MainActivity.this, "Not Connected", Toast.LENGTH_LONG).show();
                 }
                 String localPath = "/storage/emulated/0/Download/temp/";
-                String remotePath = "/media/MyBook/temp/";
+                String remotePath = "/media/69a94f44-6f67-49f6-96b2-fe9112c75893/temp/";
 
                 downloadToDevice(remotePath, localPath);
                 //playFile(localPath);
